@@ -24,14 +24,18 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @Builder
-    public Member(String email, String password, String name, UserRole role) {
+    public Member(String email, String password, String name, String phoneNumber, UserRole role) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.phoneNumber = phoneNumber;
         this.role = role;
     }
 

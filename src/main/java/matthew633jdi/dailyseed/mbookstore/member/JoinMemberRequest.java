@@ -14,6 +14,12 @@ public record JoinMemberRequest(
          @Size(min = 2, max = 20)
         String name,
 
+        @NotBlank(message = "휴대전화번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^01([0|1|6|7|8|9])-([0-9]{3,4})-([0-9]{4})$",
+                message = "휴대전화는 010-xxxx-xxxx 형식이어야 합니다."
+        )
+        String phoneNumber,
+
         @NotBlank(message = "비밀번호는 필수 입력값입니다.")
         @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
         @Pattern(
@@ -23,6 +29,6 @@ public record JoinMemberRequest(
         String password
 ) {
     public Member toEntity(String encodedPassword) {
-        return new Member(this.email, encodedPassword, this.name, UserRole.USER);
+        return new Member(this.email, encodedPassword, this.name, this.phoneNumber, UserRole.USER);
     }
 }

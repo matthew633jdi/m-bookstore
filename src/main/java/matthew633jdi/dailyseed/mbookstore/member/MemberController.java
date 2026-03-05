@@ -1,5 +1,6 @@
 package matthew633jdi.dailyseed.mbookstore.member;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +14,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public JoinMemberResponse signup(@RequestBody JoinMemberRequest request) {
+    public JoinMemberResponse signup(@Valid @RequestBody JoinMemberRequest request) {
         return memberService.join(request);
     }
 }
