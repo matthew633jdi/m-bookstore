@@ -1,5 +1,6 @@
 package matthew633jdi.dailyseed.mbookstore.member;
 
+import matthew633jdi.dailyseed.mbookstore.base.Address;
 import matthew633jdi.dailyseed.mbookstore.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,12 +38,16 @@ class MemberServiceTest {
         String phone = "010-1234-5678";
         String pwd = "Password123!";
         String encodedPassword = "encodedPassword";
+        String street = "서울 서초구 서초대로 233";
+        String detail = "서초역";
+        String postalcode = "06590";
 
-        JoinMemberRequest request = new JoinMemberRequest(email, name, phone, pwd);
+        JoinMemberRequest request = new JoinMemberRequest(email, name, phone, pwd, street, detail, postalcode);
         given(memberRepository.existsByEmail(anyString())).willReturn(false);
         given(passwordEncoder.encode(anyString())).willReturn(encodedPassword);
 
-        Member savedMockMember = Member.builder().email(email).name(name).phoneNumber(phone).password(encodedPassword).role(UserRole.USER).build();
+        Address address = Address.builder().street(street).detail(detail).zipcode(postalcode).build();
+        Member savedMockMember = Member.builder().email(email).name(name).phoneNumber(phone).password(encodedPassword).role(UserRole.USER).address(address).build();
         given(memberRepository.save(any(Member.class))).willReturn(savedMockMember);
 
         //when
@@ -54,8 +59,8 @@ class MemberServiceTest {
                 () -> assertThat(response.email()).isEqualTo(email),
                 () -> assertThat(response.name()).isEqualTo(name),
                 () -> verify(memberRepository, times(1)).save(memberCaptor.capture()),
-                () -> assertThat(memberCaptor.getValue().getEmail()).isEqualTo(email)
-
+                () -> assertThat(memberCaptor.getValue().getEmail()).isEqualTo(email),
+                () -> assertThat(memberCaptor.getValue().getAddress()).isEqualTo(address)
         );
     }
 
@@ -64,7 +69,7 @@ class MemberServiceTest {
     void join_fail_duplicateEmail() {
         // given
         String email = "dup@test.com";
-        JoinMemberRequest request = new JoinMemberRequest(email, "테스터", "010-1234-5678", "Password123!");
+        JoinMemberRequest request = new JoinMemberRequest(email, "테스터", "010-1234-5678", "Password123!", "서울 서초구 서초대로 233", "서초역", "06590");
         given(memberRepository.existsByEmail(email)).willReturn(true);
 
         // when & then
@@ -82,7 +87,7 @@ class MemberServiceTest {
     void join_fail_duplicatePhone() {
         // given
         String phone = "010-1234-5678";
-        JoinMemberRequest request = new JoinMemberRequest("dup@test.com", "테스터", phone, "Password123!");
+        JoinMemberRequest request = new JoinMemberRequest("dup@test.com", "테스터", phone, "Password123!", "서울 서초구 서초대로 233", "서초역", "06590");
         given(memberRepository.existsByPhoneNumber(phone)).willReturn(true);
 
         // when & then

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import matthew633jdi.dailyseed.mbookstore.base.Address;
 
 public record JoinMemberRequest(
         @Email(message = "올바른 이메일 형식이 아닙니다.")
@@ -26,9 +27,21 @@ public record JoinMemberRequest(
                 regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]+$",
                 message = "비밀번호는 대소문자, 숫자, 특수문자(@$!%*#?&)를 최소 1개 이상 포함해야 합니다."
         )
-        String password
+        String password,
+
+        @NotBlank(message = "도로명주소는 필수 입력값입니다.")
+        String streetAddress,
+
+        @NotBlank(message = "상세주소는 필수 입력값입니다.")
+        String detailAddress,
+
+        @NotBlank(message = "우편번호는 필수 입력값입니다")
+        @Pattern(regexp = "^[0-9]{5}$", message = "우편번호는 5자리 숫자여야 합니다.")
+        String postalcode
+
 ) {
     public Member toEntity(String encodedPassword) {
-        return new Member(this.email, encodedPassword, this.name, this.phoneNumber, UserRole.USER);
+        Address address = Address.builder().street(this.streetAddress).detail(detailAddress).zipcode(postalcode).build();
+        return new Member(this.email, encodedPassword, this.name, this.phoneNumber, UserRole.USER, address);
     }
 }
