@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -99,4 +101,25 @@ class MemberServiceTest {
                     assertThat(domainException.getErrorCode()).isEqualTo(MemberErrorCode.DUPLICATE_PHONE);
                 });
     }
+
+    @Test
+    @DisplayName("회원 조회 성공: 정상적인 정보가 주어지면 조회")
+    void search_success() {
+        //given
+        String phone = "010-1234-5678";
+
+        SearchMemberRequest request = new SearchMemberRequest(phone);
+
+        Address address = Address.builder().street("sttt").detail("details").zipcode("123123").build();
+        Member findedMockMember = Member.builder().email("test@test.com").name("tName").phoneNumber(phone).password("Password123!").role(UserRole.USER).address(address).build();
+        Optional<Member> optionalMember = Optional.of(findedMockMember);
+        given(memberRepository.findByPhoneNumber(any(String.class))).willReturn(optionalMember);
+
+        //when
+        SearchMemberResponse response = memberService.findByPhone(request);
+
+        //then
+        assertThat(response.phone()).isEqualTo(phone);
+    }
+
 }

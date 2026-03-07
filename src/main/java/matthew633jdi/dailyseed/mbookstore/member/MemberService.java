@@ -6,6 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -25,5 +27,15 @@ public class MemberService {
         String encodedPwd = passwordEncoder.encode(request.password());
         Member savedMemeber = memberRepository.save(request.toEntity(encodedPwd));
         return JoinMemberResponse.from(savedMemeber);
+    }
+
+    @Transactional(readOnly = true)
+    public SearchMemberResponse findByPhone(SearchMemberRequest request) {
+        Optional<Member> optionalMember = memberRepository.findByPhoneNumber(request.phone());
+        if (optionalMember.isEmpty()) {
+            throw new DomainException(MemberErrorCode.NOTFOUND_MEMBER);
+        }
+
+        return SearchMemberResponse.from(optionalMember.get());
     }
 }

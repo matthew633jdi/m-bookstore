@@ -19,4 +19,8 @@ public class Address {
         this.detail = detail;
         this.zipcode = zipcode;
     }
+
+    public String getFullAddress() {
+        return street + " " + detail + ", " + zipcode;
+    }
 }

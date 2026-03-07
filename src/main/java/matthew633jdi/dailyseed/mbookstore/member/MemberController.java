@@ -3,10 +3,7 @@ package matthew633jdi.dailyseed.mbookstore.member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/members")
@@ -20,5 +17,8 @@ public class MemberController {
         return memberService.join(request);
     }
 
-
+    @GetMapping("/find")
+    public SearchMemberResponse getMemberBy(@Valid @ModelAttribute SearchMemberRequest request) {
+        return memberService.findByPhone(request);
+    }
 }
