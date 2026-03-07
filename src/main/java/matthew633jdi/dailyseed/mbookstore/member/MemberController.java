@@ -19,4 +19,6 @@ public class MemberController {
     public JoinMemberResponse signup(@Valid @RequestBody JoinMemberRequest request) {
         return memberService.join(request);
     }
+
+
 }

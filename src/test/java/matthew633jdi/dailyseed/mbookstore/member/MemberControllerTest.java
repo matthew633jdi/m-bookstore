@@ -52,4 +52,51 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.name").value(name));
     }
 
+    @Test
+    @DisplayName("실패: 이메일 형식이 틀리면 400 반환한다")
+    @WithMockUser
+    void join_fail_invalidEmail() throws Exception {
+        // given
+        String mail = "test";
+        JoinMemberRequest request = new JoinMemberRequest(mail, "테스터", "010-1234-5678", "Password123!", "서울스트리스", "123-1", "12345");
+
+        // when & then
+        mockMvc.perform(post("/members/signup")
+                        .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패: 비밀번호 형식이 틀리면 400 반환한다")
+    @WithMockUser
+    void join_fail_invalidPWD() throws Exception {
+        // given
+        String password = "password123!";
+        JoinMemberRequest request = new JoinMemberRequest("test@test.com", "테스터", "010-1234-5678", password, "서울스트리스", "123-1", "12345");
+
+        // when & then
+        mockMvc.perform(post("/members/signup")
+                        .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패: Content-Type이 application/json이 아니면 415 반환한다")
+    @WithMockUser
+    void join_fail_invalidContentType() throws Exception {
+        // given
+        JoinMemberRequest request = new JoinMemberRequest("test", "테스터", "010-1234-5678", "Password123!", "서울스트리스", "123-1", "12345");
+        String invalidContent = "email=test@test.com&name=테스터&phone=010-1234-5678&password=Password123!&street_address=서울스트리스&detail_address=123-1&postal_code=12345";
+
+        // when & then
+        mockMvc.perform(post("/members/signup")
+                        .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(invalidContent))
+                .andExpect(status().isUnsupportedMediaType());
+    }
 }
