@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,7 +31,7 @@ class MemberControllerTest {
     MemberService memberService;
 
     @Test
-    @DisplayName("정상: 모든 조건이 맞으면 200 OK를 반환한다")
+    @DisplayName("정상: 모든 조건이 맞으면 201 OK를 반환한다")
     @WithMockUser   // 1. 가짜 인증 사용자 권한 부여 (401 방어)
     void join_success() throws Exception {
         // given
@@ -47,7 +48,7 @@ class MemberControllerTest {
                         .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))) // DTO -> JSON 변환
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value(mail))
                 .andExpect(jsonPath("$.name").value(name));
     }
@@ -98,5 +99,51 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .content(invalidContent))
                 .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    @DisplayName("정상: 휴대전화 조건이 맞으면 200 OK를 반환한다")
+    @WithMockUser   // 1. 가짜 인증 사용자 권한 부여 (401 방어)
+    void search_success() throws Exception {
+        // given
+        String phone = "010-1234-5678";
+        String mail = "test@test.com";
+        String name = "테스터";
+        String address = "서울특별시 서초구 서초동 123-1 111";
+
+
+        SearchMemberRequest request = new SearchMemberRequest(phone);
+
+        // 서비스 로직은 가짜로 통과하게 설정 (관심사 분리)
+        SearchMemberResponse response = new SearchMemberResponse(mail, name, phone, address);
+        given(memberService.findByPhone(request)).willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/members/find")
+                        .with(csrf())
+                        .queryParam("phone", phone))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(mail))
+                .andExpect(jsonPath("$.name").value(name))
+                .andExpect(jsonPath("$.address").value(address));
+    }
+
+    @Test
+    @DisplayName("실패: 휴대전화 형식이 맞지 않으면 400을 반환한다")
+    @WithMockUser
+    void search_fail() throws Exception {
+        // given
+        String phone = "010-12345678";
+        String mail = "test@test.com";
+        String name = "테스터";
+        String address = "서울특별시 서초구 서초동 123-1 111";
+
+        SearchMemberRequest request = new SearchMemberRequest(phone);
+
+        // when & then
+        mockMvc.perform(get("/members/find")
+                        .with(csrf())
+                        .queryParam("phone", phone))
+                .andExpect(status().isBadRequest());
     }
 }

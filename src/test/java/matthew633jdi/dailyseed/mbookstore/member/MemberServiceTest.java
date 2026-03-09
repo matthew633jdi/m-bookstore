@@ -107,19 +107,47 @@ class MemberServiceTest {
     void search_success() {
         //given
         String phone = "010-1234-5678";
+        String mail = "test@test.com";
+        String name = "테스터";
 
         SearchMemberRequest request = new SearchMemberRequest(phone);
 
         Address address = Address.builder().street("sttt").detail("details").zipcode("123123").build();
-        Member findedMockMember = Member.builder().email("test@test.com").name("tName").phoneNumber(phone).password("Password123!").role(UserRole.USER).address(address).build();
-        Optional<Member> optionalMember = Optional.of(findedMockMember);
-        given(memberRepository.findByPhoneNumber(any(String.class))).willReturn(optionalMember);
+        Member mockMember = Member.builder().email(mail).name(name).phoneNumber(phone).password("Password123!").role(UserRole.USER).address(address).build();
+        Optional<Member> optionalMember = Optional.of(mockMember);
+        given(memberRepository.findByPhoneNumber(phone)).willReturn(optionalMember);
 
         //when
         SearchMemberResponse response = memberService.findByPhone(request);
 
         //then
-        assertThat(response.phone()).isEqualTo(phone);
+        assertAll(
+                () -> assertThat(response.phone()).isEqualTo(phone),
+                () -> assertThat(response.name()).isEqualTo(name),
+                () -> assertThat(response.email()).isEqualTo(mail),
+                () -> assertThat(response.address()).isEqualTo(address.getFullAddress())
+        );
+    }
+
+    @Test
+    @DisplayName("회원 조회 실패: 존재하지 않는 휴대전화 주어지면 조회 실패")
+    void search_fail() {
+        //given
+        String phone = "010-1234-5678";
+
+        SearchMemberRequest request = new SearchMemberRequest(phone);
+
+        Optional<Member> optionalMember = Optional.empty();
+        given(memberRepository.findByPhoneNumber(phone)).willReturn(optionalMember);
+
+        //when & then
+        assertThatThrownBy(() -> memberService.findByPhone(request))
+                .isInstanceOf(DomainException.class)
+                .hasMessage("등록되지 않은 휴대전화입니다.")
+                .satisfies(e -> {
+                    DomainException domainException = (DomainException) e;
+                    assertThat(domainException.getErrorCode()).isEqualTo(MemberErrorCode.NOTFOUND_MEMBER);
+                });
     }
 
 }
