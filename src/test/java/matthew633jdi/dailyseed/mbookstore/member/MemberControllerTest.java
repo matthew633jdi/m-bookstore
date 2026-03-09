@@ -66,7 +66,10 @@ class MemberControllerTest {
                         .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("C-400"))
+                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(jsonPath("$.validation.email").value("올바른 이메일 형식이 아닙니다."));
     }
 
     @Test
@@ -82,7 +85,10 @@ class MemberControllerTest {
                         .with(csrf())   // 2. 가짜 CSRF 토큰을 요청에 묻혀서 보냄 (403 방어)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("C-400"))
+                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(jsonPath("$.validation.password").value("비밀번호는 대소문자, 숫자, 특수문자(@$!%*#?&)를 최소 1개 이상 포함해야 합니다."));
     }
 
     @Test
