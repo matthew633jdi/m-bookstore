@@ -14,7 +14,7 @@ public class CategoryQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<Category> findRootCategoriesWithChildren() {
+    public List<Category> findRootCategories() {
         return jpaQueryFactory
                 .selectFrom(category)
                 .where(category.parent.isNull())

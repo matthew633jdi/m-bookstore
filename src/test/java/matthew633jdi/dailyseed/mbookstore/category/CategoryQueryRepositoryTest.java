@@ -47,7 +47,7 @@ class CategoryQueryRepositoryTest {
     @DisplayName("심플 조회 + Batch size: 대분류 조회 후 자식은 IN 쿼리로 지연 로딩")
     void test_simple_query_with_batch_size() {
         // when
-        List<Category> roots = categoryQueryRepository.findRootCategoriesWithChildren();
+        List<Category> roots = categoryQueryRepository.findRootCategories();
 
         assertThat(roots.size()).isEqualTo(2);
 
