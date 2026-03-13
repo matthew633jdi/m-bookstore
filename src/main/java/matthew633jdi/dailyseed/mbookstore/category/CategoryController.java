@@ -1,11 +1,12 @@
 package matthew633jdi.dailyseed.mbookstore.category;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -17,6 +18,17 @@ public class CategoryController {
 
     @GetMapping
     public List<CategoryResponse> getCategories() {
-        return null;
+        return categoryService.findRootCategories();
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> registerCategory(@RequestBody @Valid CreateCategoryRequest request) {
+        Long categoryId = categoryService.createCategory(request);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(categoryId)
+                .toUri();
+        return ResponseEntity.created(location).build();
     }
 }
