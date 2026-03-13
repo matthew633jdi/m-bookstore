@@ -2,7 +2,6 @@ package matthew633jdi.dailyseed.mbookstore.category;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,10 +26,12 @@ public class Category {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> children = new ArrayList<>();
 
-    @Builder
-    public Category(String name, Category parent) {
+    private Category(String name) {
         this.name = name;
-        this.parent = parent;
+    }
+
+    public static Category create(String name) {
+        return new Category(name);
     }
 
     public void addChild(Category child) {

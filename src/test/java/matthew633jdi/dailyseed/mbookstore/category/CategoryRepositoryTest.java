@@ -24,12 +24,10 @@ class CategoryRepositoryTest {
         // given
         String novelStr = "소설";
 
-        Category kor = Category.builder().name("국내도서").build();
-        Category novel = Category.builder().name(novelStr).build();
-        Category poetry = Category.builder().name("시").build();
+        Category kor = Category.create("국내도서");
 
-        kor.addChild(novel);
-        kor.addChild(poetry);
+        kor.addChild(Category.create(novelStr));
+        kor.addChild(Category.create("시"));
 
         // when
         categoryRepository.save(kor);
@@ -49,12 +47,11 @@ class CategoryRepositoryTest {
         // given
         String novelStr = "소설";
 
-        Category kor = Category.builder().name("국내도서").build();
-        Category novel = Category.builder().name(novelStr).build();
-        Category poetry = Category.builder().name("시").build();
+        Category kor = Category.create("국내도서");
 
+        kor.addChild(Category.create(novelStr));
+        Category novel = Category.create("시");
         kor.addChild(novel);
-        kor.addChild(poetry);
 
         categoryRepository.save(kor);
 
@@ -77,9 +74,8 @@ class CategoryRepositoryTest {
     @DisplayName("부모 객체에서 제거한 고아 객체 삭제(orphanRemoval)")
     void orphan_removal_test() {
         // given
-        Category kor = Category.builder().name("국내도서").build();
-        Category novel = Category.builder().name("소설").build();
-        kor.addChild(novel);
+        Category kor = Category.create("국내도서");
+        kor.addChild(Category.create("소설"));
 
         categoryRepository.save(kor);
         em.flush();

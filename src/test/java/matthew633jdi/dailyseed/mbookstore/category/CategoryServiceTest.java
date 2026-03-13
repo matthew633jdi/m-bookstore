@@ -31,12 +31,14 @@ class CategoryServiceTest {
     @DisplayName("최상단 카테고리와 그 자식들까지 DTO로 가져오기")
     void success_get_root_categories() {
         //given
-        Category backend = Category.builder().name("backend").build();
-        backend.addChild(Category.builder().name("Java").build());
-        backend.addChild(Category.builder().name("Spring").build());
-        Category kor = Category.builder().name("korean").build();
-        kor.addChild(Category.builder().name("Novel").build());
-        kor.addChild(Category.builder().name("Poetry").build());
+        Category backend = Category.create("backend");
+        backend.addChild(Category.create("Java"));
+        backend.addChild(Category.create("Spring"));
+
+        Category kor = Category.create("korean");
+        kor.addChild(Category.create("Novel"));
+        kor.addChild(Category.create("Poetry"));
+
         List<Category> mockCategoreis = List.of(backend, kor);
 
         given(categoryQueryRepository.findRootCategories()).willReturn(mockCategoreis);

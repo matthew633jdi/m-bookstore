@@ -28,13 +28,13 @@ class CategoryQueryRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Category backend = Category.builder().name("backend").build();
-        backend.addChild(Category.builder().name("Java").build());
-        backend.addChild(Category.builder().name("Spring").build());
+        Category backend = Category.create("backend");
+        backend.addChild(Category.create("Java"));
+        backend.addChild(Category.create("Spring"));
 
-        Category kor = Category.builder().name("KOR").build();
-        kor.addChild(Category.builder().name("novel").build());
-        kor.addChild(Category.builder().name("poetry").build());
+        Category kor = Category.create("KOR");
+        kor.addChild(Category.create("novel"));
+        kor.addChild(Category.create("poetry"));
 
         categoryRepository.save(backend);
         categoryRepository.save(kor);

@@ -8,8 +8,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
         default_batch_fetch_size: 1000
 
-#logging:
-#  level:
-#    sql: debug
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
