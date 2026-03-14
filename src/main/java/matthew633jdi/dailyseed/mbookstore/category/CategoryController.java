@@ -2,6 +2,7 @@ package matthew633jdi.dailyseed.mbookstore.category;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,7 +22,7 @@ public class CategoryController {
         return categoryService.findRootCategories();
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> registerCategory(@RequestBody @Valid CreateCategoryRequest request) {
         Long categoryId = categoryService.createCategory(request);
 
