@@ -8,7 +8,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 public enum CategoryErrorCode implements ErrorCode {
     DUPLICATE_CATEGORY_NAME(CONFLICT, "C-001", "이미 사용중인 카테고리입니다."),
-    NOTFOUND_PARENT_CATEGORY(NOT_FOUND, "C-002", "등록되지 않은 부모 카테고리 ID입니다.");
+    NOTFOUND_PARENT_CATEGORY(NOT_FOUND, "C-002", "등록되지 않은 부모 카테고리 ID입니다."),
+    NOTFOUND_CATEGORY_ID(NOT_FOUND, "C-003", "등록되지 않은 카테고리 ID입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

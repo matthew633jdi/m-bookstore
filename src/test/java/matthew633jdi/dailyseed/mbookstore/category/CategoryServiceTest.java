@@ -175,4 +175,47 @@ class CategoryServiceTest {
 
         then(categoryRepository).should(never()).save(any());
     }
+
+    @Test
+    @DisplayName("정상: 카테고리 ID를 통한 조회")
+    void success_findById() {
+        // given
+        Long id = 1L;
+        String name = "java";
+
+        Category rootCategory = Category.create("backend");
+        Category mockCategory = Category.create(name);
+        rootCategory.addChild(mockCategory);
+        mockCategory.addChild(Category.create("java8"));
+        mockCategory.addChild(Category.create("java9"));
+        mockCategory.addChild(Category.create("java10"));
+
+        ReflectionTestUtils.setField(mockCategory, "id", id);
+        given(categoryRepository.findById(id)).willReturn(Optional.of(mockCategory));
+        // when
+        CategoryResponse response = categoryService.findCategoryById(id);
+        // then
+        assertAll(
+                () -> assertThat(response.name()).isEqualTo(name),
+                () -> assertThat(response.children()).extracting(CategoryResponse::name).containsAll(List.of("java8", "java9", "java10"))
+        );
+    }
+
+        @Test
+        @DisplayName("실패: 카테고리 ID를 통한 조회 실패")
+        void fail_findById() {
+            // given
+            Long notFoundId = 999L;
+
+            given(categoryRepository.findById(notFoundId)).willReturn(Optional.empty());
+            // when & then
+            assertThatThrownBy(
+                    () -> categoryService.findCategoryById(notFoundId)
+            ).isInstanceOf(DomainException.class)
+                    .hasMessage("등록되지 않은 카테고리 ID입니다.")
+                    .satisfies(e -> {
+                        DomainException domainException = (DomainException) e;
+                        assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.NOTFOUND_CATEGORY_ID);
+                    });
+    }
 }

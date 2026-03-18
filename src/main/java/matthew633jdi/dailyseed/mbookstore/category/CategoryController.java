@@ -32,4 +32,10 @@ public class CategoryController {
                 .toUri();
         return ResponseEntity.created(location).build();
     }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long categoryId) {
+        CategoryResponse response = categoryService.findCategoryById(categoryId);
+        return ResponseEntity.ok(response);
+    }
 }

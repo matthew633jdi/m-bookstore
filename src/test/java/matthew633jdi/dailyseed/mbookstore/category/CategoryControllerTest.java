@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -116,7 +117,7 @@ class CategoryControllerTest {
     @WithMockUser
     void fail_no_positive_parentId() throws Exception {
         // given
-        CreateCategoryRequest request = new CreateCategoryRequest("backend", 0L);
+        CreateCategoryRequest request = new CreateCategoryRequest("backend", -12L);
 
         // when & then
         mockMvc.perform(post("/categories")
@@ -143,6 +144,36 @@ class CategoryControllerTest {
                         .content(invalidContent))
                 .andExpect(status().isUnsupportedMediaType())
                 .andExpect(jsonPath("$.code").value("C-415"));
+    }
+
+    @Test
+    @DisplayName("정상: 등록된 카테고리 ID를 통한 조회")
+    @WithMockUser
+    void success_findById() throws Exception {
+        // given
+        Long id = 1L;
+        String name = "backend";
+        CategoryResponse mockResponse = new CategoryResponse(name, null);
+        given(categoryService.findCategoryById(id)).willReturn(mockResponse);
+
+        mockMvc.perform(get("/categories/{categoryId}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(name));
+    }
+
+    @Test
+    @DisplayName("실패: 없는 카테고리 ID를 통한 조회")
+    @WithMockUser
+    void fail_findById() throws Exception {
+        // given
+        Long notFoundId = 999L;
+        given(categoryService.findCategoryById(notFoundId))
+                .willThrow(new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_ID));
+
+        mockMvc.perform(get("/categories/{categoryId}", notFoundId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getCode()))
+                .andExpect(jsonPath("$.message").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getMessage()));
     }
 
 }

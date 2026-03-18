@@ -37,4 +37,10 @@ public class CategoryService {
 
         return categoryRepository.save(newCategory).getId();
     }
+
+    @Transactional(readOnly = true)
+    public CategoryResponse findCategoryById(Long requestedId) {
+        Category response = categoryRepository.findById(requestedId).orElseThrow(() -> new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_ID));
+        return CategoryResponse.from(response);
+    }
 }
