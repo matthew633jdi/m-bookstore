@@ -38,4 +38,10 @@ public class CategoryController {
         CategoryResponse response = categoryService.findCategoryById(categoryId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping(params = "name")
+    public ResponseEntity<CategoryResponse> getCategoryByName(@RequestParam String name) {
+        CategoryResponse response = categoryService.findCategoryByName(name);
+        return ResponseEntity.ok(response);
+    }
 }

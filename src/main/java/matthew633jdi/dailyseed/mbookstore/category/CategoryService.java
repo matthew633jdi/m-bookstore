@@ -43,4 +43,9 @@ public class CategoryService {
         Category response = categoryRepository.findById(requestedId).orElseThrow(() -> new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_ID));
         return CategoryResponse.from(response);
     }
+
+    public CategoryResponse findCategoryByName(String requestedName) {
+        Category response = categoryRepository.findByName(requestedName).orElseThrow(() -> new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_NAME));
+        return CategoryResponse.from(response);
+    }
 }

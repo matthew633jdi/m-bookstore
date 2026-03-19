@@ -153,7 +153,7 @@ class CategoryControllerTest {
         // given
         Long id = 1L;
         String name = "backend";
-        CategoryResponse mockResponse = new CategoryResponse(name, null);
+        CategoryResponse mockResponse = new CategoryResponse(id, name, null);
         given(categoryService.findCategoryById(id)).willReturn(mockResponse);
 
         mockMvc.perform(get("/categories/{categoryId}", id))
@@ -174,6 +174,40 @@ class CategoryControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getCode()))
                 .andExpect(jsonPath("$.message").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getMessage()));
+    }
+
+    @Test
+    @DisplayName("정상: 등록된 카테고리 이름을 통한 조회")
+    @WithMockUser
+    void success_findByName() throws Exception {
+        // given
+        Long id = 1L;
+        String name = "backend";
+        CategoryResponse mockResponse = new CategoryResponse(id, name, null);
+        given(categoryService.findCategoryByName(name)).willReturn(mockResponse);
+
+        mockMvc.perform(get("/categories")
+                        .queryParam("name", name))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value(name));
+    }
+
+    @Test
+    @DisplayName("실패: 없는 카테고리 이름을 통한 조회")
+    @WithMockUser
+    void fail_findByName() throws Exception {
+        // given
+        String notFoundName = "unknown_category";
+
+        given(categoryService.findCategoryByName(notFoundName))
+                .willThrow(new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_NAME));
+
+        mockMvc.perform(get("/categories")
+                        .queryParam("name", notFoundName))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(CategoryErrorCode.NOTFOUND_CATEGORY_NAME.getCode()))
+                .andExpect(jsonPath("$.message").value(CategoryErrorCode.NOTFOUND_CATEGORY_NAME.getMessage()));
     }
 
 }

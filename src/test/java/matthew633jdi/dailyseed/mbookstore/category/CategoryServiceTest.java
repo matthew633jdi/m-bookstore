@@ -218,4 +218,83 @@ class CategoryServiceTest {
                         assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.NOTFOUND_CATEGORY_ID);
                     });
     }
+
+    @Test
+    @DisplayName("정상: 등록된 카테고리 이름을 통한 조회")
+    void success_findByName() {
+        // given
+        String name = "backend";
+        Long mockId = 1L;
+
+        Category mockCategory = Category.create(name);
+
+        ReflectionTestUtils.setField(mockCategory, "id", mockId);
+
+        mockCategory.addChild(Category.create("java8"));
+        mockCategory.addChild(Category.create("java9"));
+
+        given(categoryRepository.findByName(name)).willReturn(Optional.of(mockCategory));
+
+        // when
+        CategoryResponse response = categoryService.findCategoryByName(name);
+
+        // then
+        assertAll(
+                () -> assertThat(response.id()).isEqualTo(mockId),
+                () -> assertThat(response.name()).isEqualTo(name),
+                () -> assertThat(response.children()).extracting(CategoryResponse::name).containsExactly("java8", "java9")
+        );
+    }
+
+    @Test
+    @DisplayName("정상: 부모가 있는 카테고리(중간 노드) 이름으로 검색 시, 부모는 제외하고 본인과 자식만 반환한다")
+    void success_findByName_with_parent() {
+        // given
+        String searchName = "backend";
+        Long mockId = 2L;
+
+        Category rootCategory = Category.create("programming");
+        Category targetCategory = Category.create(searchName);
+        Category childCategory = Category.create("java");
+
+        rootCategory.addChild(targetCategory);
+        targetCategory.addChild(childCategory);
+
+        ReflectionTestUtils.setField(targetCategory, "id", mockId);
+
+        given(categoryRepository.findByName(searchName)).willReturn(Optional.of(targetCategory));
+
+        // when
+        CategoryResponse response = categoryService.findCategoryByName(searchName);
+
+        // then
+        assertAll(
+                () -> assertThat(response.id()).isEqualTo(mockId),
+                () -> assertThat(response.name()).isEqualTo(searchName),
+
+                () -> assertThat(response.children())
+                        .extracting(CategoryResponse::name)
+                        .containsExactly("java"),
+                () -> assertThat(response.children()).hasSize(1)
+        );
+    }
+
+    @Test
+    @DisplayName("실패: 카테고리 이름을 통한 조회 실패")
+    void fail_findByName() {
+        // given
+        String notFoundName = "unknown_category";
+
+        given(categoryRepository.findByName(notFoundName)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(
+                () -> categoryService.findCategoryByName(notFoundName)
+        ).isInstanceOf(DomainException.class)
+                .hasMessage(CategoryErrorCode.NOTFOUND_CATEGORY_NAME.getMessage())
+                .satisfies(e -> {
+                    DomainException domainException = (DomainException) e;
+                    assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.NOTFOUND_CATEGORY_NAME);
+                });
+    }
 }
