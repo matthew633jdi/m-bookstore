@@ -13,11 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
@@ -208,6 +206,24 @@ class CategoryControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(CategoryErrorCode.NOTFOUND_CATEGORY_NAME.getCode()))
                 .andExpect(jsonPath("$.message").value(CategoryErrorCode.NOTFOUND_CATEGORY_NAME.getMessage()));
+    }
+
+    @Test
+    @DisplayName("정상: 등록된 카테고리 ID에 대해 정상적으로 수정")
+    @WithMockUser
+    void success_updateName() throws Exception {
+        // given
+        Long id = 1L;
+        String name = "backend";
+        UpdateCategoryRequest request = new UpdateCategoryRequest(name);
+
+        willDoNothing().given(categoryService).updateCategory(eq(id), any(UpdateCategoryRequest.class));
+
+        mockMvc.perform(patch("/categories/{categoryId}/name", id)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
     }
 
 }

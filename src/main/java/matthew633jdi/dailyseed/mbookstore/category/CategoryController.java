@@ -44,4 +44,10 @@ public class CategoryController {
         CategoryResponse response = categoryService.findCategoryByName(name);
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping(value = "/{categoryId}/name", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateCategoryName(@PathVariable Long categoryId, @RequestBody UpdateCategoryRequest request) {
+        categoryService.updateCategory(categoryId, request);
+        return ResponseEntity.noContent().build();
+    }
 }

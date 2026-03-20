@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -296,5 +297,79 @@ class CategoryServiceTest {
                     DomainException domainException = (DomainException) e;
                     assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.NOTFOUND_CATEGORY_NAME);
                 });
+    }
+
+    @Test
+    @DisplayName("정상: 원하는 카테고리 이름 수정 시, 객체의 상태가 변경된다.")
+    void success_updateName() {
+        // given
+        Long id = 1L;
+        String originName = "backend";
+        String newName = "programming";
+
+        Category mockCategory = Category.create(originName);
+        UpdateCategoryRequest request = new UpdateCategoryRequest(newName);
+
+        ReflectionTestUtils.setField(mockCategory, "id", id);
+
+        given(categoryRepository.findById(id)).willReturn(Optional.of(mockCategory));
+        given(categoryRepository.existsByName(newName)).willReturn(false);
+
+        // when
+        categoryService.updateCategory(id, request);
+
+        // then
+        assertThat(mockCategory.getName()).isEqualTo(newName);
+    }
+
+    @Test
+    @DisplayName("실패: 변경하려는 이름이 이미 존재하는 경우 실패")
+    void fail_updateName_duplicated() {
+        // given
+        Long id = 1L;
+        String originName = "backend";
+        String newName = "programming";
+
+        Category mockCategory = Category.create(originName);
+        UpdateCategoryRequest request = new UpdateCategoryRequest(newName);
+
+        ReflectionTestUtils.setField(mockCategory, "id", id);
+
+        given(categoryRepository.findById(id)).willReturn(Optional.of(mockCategory));
+        given(categoryRepository.existsByName(newName)).willReturn(true);
+
+        // when & then
+        assertThatThrownBy(() -> categoryService.updateCategory(id, request))
+                .isInstanceOf(DomainException.class)
+                .hasMessage(CategoryErrorCode.DUPLICATE_CATEGORY_NAME.getMessage())
+                .satisfies(e -> {
+                    DomainException domainException = (DomainException) e;
+                    assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.DUPLICATE_CATEGORY_NAME);
+                });
+
+        assertThat(mockCategory.getName()).isEqualTo(originName);
+    }
+
+    @Test
+    @DisplayName("실패: 변경하려는 카테고리 ID가 존재하지 않아 실패")
+    void fail_updateName_notfoundId() {
+        // given
+        Long notFoundId = 999L;
+        String newName = "programming";
+
+        UpdateCategoryRequest request = new UpdateCategoryRequest(newName);
+
+        given(categoryRepository.findById(notFoundId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> categoryService.updateCategory(notFoundId, request))
+                .isInstanceOf(DomainException.class)
+                .hasMessage(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getMessage())
+                .satisfies(e -> {
+                    DomainException domainException = (DomainException) e;
+                    assertThat(domainException.getErrorCode()).isEqualTo(CategoryErrorCode.NOTFOUND_CATEGORY_ID);
+                });
+
+        then(categoryRepository).should(never()).existsByName(anyString());
     }
 }
