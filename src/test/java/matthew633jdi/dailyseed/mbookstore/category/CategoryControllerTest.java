@@ -226,4 +226,41 @@ class CategoryControllerTest {
                 .andExpect(status().isNoContent());
     }
 
+    @Test
+    @DisplayName("실패: 빈 요청으로 실패 시 서비스 로직은 호출되지 않는다.")
+    @WithMockUser
+    void fail_updateName_emptyName() throws Exception {
+        // given
+        Long id = 1L;
+        String name = "";
+        UpdateCategoryRequest request = new UpdateCategoryRequest(name);
+
+        mockMvc.perform(patch("/categories/{categoryId}/name", id)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+
+        then(categoryService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("실패: 등록되지 않은 카테고리 ID에 대해 오류")
+    @WithMockUser
+    void fail_updateName_unregistered() throws Exception {
+        // given
+        Long notFoundId = 999L;
+        String name = "backend";
+        UpdateCategoryRequest request = new UpdateCategoryRequest(name);
+
+        willThrow(new DomainException(CategoryErrorCode.NOTFOUND_CATEGORY_ID)).given(categoryService).updateCategory(notFoundId, request);
+
+        mockMvc.perform(patch("/categories/{categoryId}/name", notFoundId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getCode()))
+                .andExpect(jsonPath("$.message").value(CategoryErrorCode.NOTFOUND_CATEGORY_ID.getMessage()));
+    }
 }

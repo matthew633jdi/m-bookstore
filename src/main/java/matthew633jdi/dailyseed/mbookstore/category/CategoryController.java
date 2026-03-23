@@ -46,7 +46,7 @@ public class CategoryController {
     }
 
     @PatchMapping(value = "/{categoryId}/name", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateCategoryName(@PathVariable Long categoryId, @RequestBody UpdateCategoryRequest request) {
+    public ResponseEntity<Void> updateCategoryName(@PathVariable Long categoryId, @Valid @RequestBody UpdateCategoryRequest request) {
         categoryService.updateCategory(categoryId, request);
         return ResponseEntity.noContent().build();
     }
