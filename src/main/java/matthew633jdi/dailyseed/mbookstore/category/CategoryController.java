@@ -1,0 +1,53 @@
+package matthew633jdi.dailyseed.mbookstore.category;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/categories")
+@RequiredArgsConstructor
+public class CategoryController {
+
+    private final CategoryService categoryService;
+
+    @GetMapping
+    public List<CategoryResponse> getCategories() {
+        return categoryService.findRootCategories();
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> registerCategory(@RequestBody @Valid CreateCategoryRequest request) {
+        Long categoryId = categoryService.createCategory(request);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(categoryId)
+                .toUri();
+        return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long categoryId) {
+        CategoryResponse response = categoryService.findCategoryById(categoryId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(params = "name")
+    public ResponseEntity<CategoryResponse> getCategoryByName(@RequestParam String name) {
+        CategoryResponse response = categoryService.findCategoryByName(name);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping(value = "/{categoryId}/name", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateCategoryName(@PathVariable Long categoryId, @Valid @RequestBody UpdateCategoryRequest request) {
+        categoryService.updateCategory(categoryId, request);
+        return ResponseEntity.noContent().build();
+    }
+}
